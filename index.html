@@ -1,0 +1,84 @@
+<html>
+
+<head>
+    <!--Declaracion de Librerias -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+
+    <!--Declaracion de StylesSheets-->
+    <link rel="stylesheet" href="css/tabPage.css">
+
+    <!--Declaracion de Scripts-->
+    <script type="text/javascript" src="js/tabPage.js"></script>
+
+    <!--Encabezado-->
+    <div class="jumbotron text-center">
+        <h1>Traductor C# - Pyhton </h1>
+        <p>Cristian Meoño - 201801397</p>
+    </div>
+</head>
+
+<body>
+<div class="container">
+    <div class="row">
+        <!--Editor de Texto-->
+        <div class="col-sm-6 divcontent" id="myTabPage">
+            <h4>Codigo C#</h4>
+            <hr>
+            <button class="btn btn-success col-sm-4" onclick="addTab()">Nueva Pestaña</button>
+            <hr>
+
+            <ul class="nav nav-tabs nav-fill" id="tabPageBtns">
+                <li class="nav-item">
+                    <a class="nav-link active tabBtn" id="1" onclick="openEditorTab(event,'tab1')">Pestaña1</a>
+                </li>
+            </ul>
+
+            <div id="tab1" class="tabContent" style="display: block;" >
+                <textarea id="txtArea1" class="col-sm-12 form-control" rows="20"></textarea>
+            </div>
+
+        </div>
+        <hr>
+        <div class="col-sm-6 divcontent">
+            <!--Codigo Python-->
+            <div>
+                <h4>Codigo Python</h4>
+                <hr>
+                <button class="btn btn-outline-primary col-sm-4" onclick="addTab()">Guardar .py</button>
+                <hr>
+                <textarea readonly id="txtPython" class="col-sm-12 form-control" rows="20"></textarea>
+            </div>
+            <hr>
+            <!--Codigo HTML & JSON-->
+            <div >
+                <h4>HTML y JSON</h4>
+                <hr>
+                <button  class="btn btn-outline-primary col-sm-4" onclick="addTab()">Guardar HTML</button>
+                <button  class="btn btn-outline-primary col-sm-4" onclick="addTab()">Guardar JSON</button>
+                <hr>
+
+                <ul class="nav nav-tabs nav-fill">
+                    <li class="nav-item">
+                        <a id="HTMLBtn" class="nav-link active" onclick="openTab(event,'txtHTML')">HTML</a>
+                    </li>
+                    <li class="nav-item">
+                        <a id="JSONBtn" class="nav-link " onclick="openTab(event,'txtJSON')">JSON</a>
+                    </li>
+                </ul>
+    
+                <div id="divTxtHTML" style="display: block;" >
+                    <textarea readonly id="txtJSON" class="col-sm-12 form-control" rows="15"></textarea>
+                </div>
+                <div id="divTxtJSON" style="display: none;" >
+                    <textarea readonly id="txtHTML" class="col-sm-12 form-control" rows="15"></textarea>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>
