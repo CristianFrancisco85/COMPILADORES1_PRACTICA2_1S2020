@@ -53,8 +53,59 @@
             </div>
         </div>
         <hr>
+        <!--Tabla de Errores Lexicos-->
+        <div id="divTableLexicos" style="display: block;">
+            <h4 class="float-left">Errores Lexicos</h4>
+            <button class="btn btn-outline-danger col-md-4 float-right" onclick="saveHTMLLexicos()">Guardar como HTML</button>
+            <br><br>
+            <hr>
+            <div id="tableLexicos">
+            <table class="table table-hover">
+                <thead class="thead-dark">
+                  <tr>
+                    <th scope="col">No.</th>
+                    <th scope="col">Linea</th>
+                    <th scope="col">Columa</th>
+                    <th scope="col">Descripcion</th>
+                  </tr>
+                </thead>
+                <tbody id="tableBodyLexicos">
+                </tbody>
+            </table>
+            </div>
+            <hr>
+        </div>
+        <!--Tabla de Errores Sintacticos-->
+        <div id="divTableSintacticos" style="display: block;" >
+            <h4 class="float-left">Errores Sintacticos</h4>
+            <button class="btn btn-outline-danger col-md-4 float-right" onclick="saveHTMLSintacticos()">Guardar como HTML</button>
+            <br><br>
+            <hr>
+            <div id="tableSintacticos">
+            <table class="table table-hover">
+                <thead class="thead-dark">
+                  <tr>
+                    <th scope="col">No.</th>
+                    <th scope="col">Linea</th>
+                    <th scope="col">Columa</th>
+                    <th scope="col">Descripcion</th>
+                  </tr>
+                </thead>
+                <tbody id="tableBodySintacticos">
+                  <tr>
+                    <th>1</th>
+                    <td>12</td>
+                    <td>20</td>
+                    <td>No se esperaba ";"</td>
+                  </tr>
+                </tbody>
+            </table>
+            </div>
+            <hr>
+        </div>
         <!--Tabla de Variables-->   
         <div>
+        <h4>Tabla de Variables</h4>
         <table class="table table-hover">
             <thead class="thead-dark">
               <tr>
@@ -102,10 +153,10 @@
             </ul>
 
             <div id="divTxtHTML" style="display: block;" >
-                <textarea readonly id="txtJSON" class="col-md-12 form-control" rows="15"></textarea>
+                <textarea readonly id="txtJSON" class="col-md-12 form-control" rows="20"></textarea>
             </div>
             <div id="divTxtJSON" style="display: none;" >
-                <textarea readonly id="txtHTML" class="col-md-12 form-control" rows="15"></textarea>
+                <textarea readonly id="txtHTML" class="col-md-12 form-control" rows="20"></textarea>
             </div>
 
         </div>

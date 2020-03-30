@@ -107,7 +107,7 @@ function ScanText(){
         //SI SE ESCANEO UN CARACTER OTROS
         if(!ControlScan){
             Token.Fila = Math.ceil(i/62);
-            Token.Columna = i - (Fila-1)*62;
+            Token.Columna = i - (Token.Fila-1)*62;
             Token.Lexema = String.fromCharCode(MyByte);
             TokensArr.push(Token);
         }
@@ -138,7 +138,7 @@ function ScanText(){
                     Token.Tipo="ID"
                 }
                 Token.Fila = Math.ceil(i/62);
-                Token.Columna = i - (Fila-1)*62;
+                Token.Columna = i - (Token.Fila-1)*62;
                 Token.Lexema=TempLexema;
                 TokensArr.push(Token);
             }
@@ -161,7 +161,7 @@ function ScanText(){
                 }
                 Token.Tipo="NUMERO";
                 Token.Fila = Math.ceil(i/62);
-                Token.Columna = i - (Fila-1)*62;
+                Token.Columna = i - (Token.Fila-1)*62;
                 Token.Lexema=TempLexema;
                 TokensArr.push(Token);
             }
@@ -179,7 +179,7 @@ function ScanText(){
                         Token.Tipo="CADENA";
                         Token.Lexema=TempLexema;
                         Token.Fila = Math.ceil(i/62);
-                        Token.Columna = i - (Fila-1)*62;
+                        Token.Columna = i - (Token.Fila-1)*62;
                         TokensArr.push(Token);
                         break;
                     }
@@ -203,7 +203,7 @@ function ScanText(){
                         Token.Tipo="CADENA_HTML";
                         Token.Lexema=TempLexema;
                         Token.Fila = Math.ceil(i/62);
-                        Token.Columna = i - (Fila-1)*62;
+                        Token.Columna = i - (Token.Fila-1)*62;
                         TokensArr.push(Token);
                         break;
                     }
@@ -223,7 +223,7 @@ function ScanText(){
                     Token.Tipo="SIGNO_DIVISION";
                     Token.Lexema=TempLexema;
                     Token.Fila = Math.ceil(i/62);
-                    Token.Columna = i - (Fila-1)*62;
+                    Token.Columna = i - (Token.Fila-1)*62;
                     TokensArr.push(Token);
                 }
                 //Si no es un comentario
@@ -240,7 +240,7 @@ function ScanText(){
                                 Token.Tipo="COMENTARIO";
                                 Token.Lexema=TempLexema;
                                 Token.Fila = Math.ceil(i/62);
-                                Token.Columna = i - (Fila-1)*62;
+                                Token.Columna = i - (Token.Fila-1)*62;
                                 TokensArr.push(Token);
                                 break;
                             }
@@ -262,7 +262,7 @@ function ScanText(){
                                 Token.Tipo="COMENTARIO_MULTI";
                                 Token.Lexema=TempLexema;
                                 Token.Fila = Math.ceil(i/62);
-                                Token.Columna = i - (Fila-1)*62;
+                                Token.Columna = i - (Token.Fila-1)*62;
                                 TokensArr.push(Token);
                                 break;
                             }
@@ -276,15 +276,24 @@ function ScanText(){
             }
 
             //PARA ERRORES LEXICOS
-            else{
+            else if(MyByte > 32){
                 Error.Lexema=String.fromCharCode(MyByte);
                 Error.Fila = Math.ceil(i/62);
-                Error.Columna = i - (Fila-1)*62;
+                Error.Columna = i - ((Error.Fila-1)*62);
                 ErroresArr.push(Error);
+                ErroresBool=true;
             }
         }
     }
 
+    //SI AL TERMINAR EL ANALISIS LEXICO HAY ERRORES SE GENERA REPORTE
+    if(ErroresBool){
+        showErrores(ErroresArr);
+    }
+    //SI NO SE PROSIGUE CON ANALISIS SINTACTICO
+    else{
+
+    }
 }
 
 function testAlfabeto(Caracter){
@@ -306,5 +315,34 @@ function testNumeros(Caracter){
     }
     else{
         return false;
+    }
+}
+
+function showErrores(Arreglo){
+    var NewRow;
+    var NewColumn;
+    //SE VACIA TABLA  
+    document.getElementById("tableBodyLexicos").innerHTML="";
+    for(var i =0;i<Arreglo.length;i++){
+
+        NewRow=document.createElement("tr");
+
+        NewColumn=document.createElement("th");
+        NewColumn.innerHTML=i
+        NewRow.appendChild(NewColumn);
+
+        NewColumn=document.createElement("td");
+        NewColumn.innerHTML=Arreglo[i].Fila
+        NewRow.appendChild(NewColumn);
+
+        NewColumn=document.createElement("td");
+        NewColumn.innerHTML=Arreglo[i].Columna
+        NewRow.appendChild(NewColumn);
+
+        NewColumn=document.createElement("td");
+        NewColumn.innerHTML="Caracter \""+Arreglo[i].Lexema+"\" desconocido"
+        NewRow.appendChild(NewColumn);
+
+        document.getElementById("tableBodyLexicos").appendChild(NewRow);
     }
 }
