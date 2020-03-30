@@ -46,7 +46,7 @@ function addTab(){
     document.getElementById("myTabPage").appendChild(newTab);
 
     var newTxtArea = document.createElement("textarea");
-    newTxtArea.className="col-sm-12 form-control"
+    newTxtArea.className="col-md-12 form-control"
     newTxtArea.id="txtArea"+tabIndex;
     newTxtArea.rows=20;
     newTab.appendChild(newTxtArea);

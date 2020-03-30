@@ -8,10 +8,11 @@
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
 
     <!--Declaracion de StylesSheets-->
-    <link rel="stylesheet" href="css/tabPage.css">
+    <link rel="stylesheet" href="css/styles.css">
 
     <!--Declaracion de Scripts-->
     <script type="text/javascript" src="js/tabPage.js"></script>
+    <script type="text/javascript" src="js/archivos.js"></script>
 
     <!--Encabezado-->
     <div class="jumbotron text-center">
@@ -22,12 +23,22 @@
 
 <body>
 <div class="container">
-    <div class="row">
+<div class="row">
+    <div class="col-md-6 divcontent">
         <!--Editor de Texto-->
-        <div class="col-sm-6 divcontent" id="myTabPage">
+        <div id="myTabPage">
             <h4>Codigo C#</h4>
             <hr>
-            <button class="btn btn-success col-sm-4" onclick="addTab()">Nueva Pestaña</button>
+            <button class="btn btn-success col-md-3" onclick="addTab()">Nueva Pestaña</button>
+            <button class="btn btn-warning  col-md-3" onclick="addTab()">Traducir</button>
+            <button class="btn btn-outline-primary col-md-3" onclick="saveData('txtCSharp')">Guardar .cs</button>
+            <div class="input-group" style="padding-top: 20;">
+                <div class="custom-file">
+                  <input type="file" class="custom-file-input" id="inputFile" onchange="openArchive(event)">
+                  <label class="custom-file-label" for="inputFile">Abrir .cs</label>
+                </div>
+            </div>
+            
             <hr>
 
             <ul class="nav nav-tabs nav-fill" id="tabPageBtns">
@@ -37,48 +48,68 @@
             </ul>
 
             <div id="tab1" class="tabContent" style="display: block;" >
-                <textarea id="txtArea1" class="col-sm-12 form-control" rows="20"></textarea>
+                <textarea id="txtArea1" class="col-md-12 form-control" rows="20"></textarea>
             </div>
-
         </div>
         <hr>
-        <div class="col-sm-6 divcontent">
-            <!--Codigo Python-->
-            <div>
-                <h4>Codigo Python</h4>
-                <hr>
-                <button class="btn btn-outline-primary col-sm-4" onclick="addTab()">Guardar .py</button>
-                <hr>
-                <textarea readonly id="txtPython" class="col-sm-12 form-control" rows="20"></textarea>
-            </div>
-            <hr>
-            <!--Codigo HTML & JSON-->
-            <div >
-                <h4>HTML y JSON</h4>
-                <hr>
-                <button  class="btn btn-outline-primary col-sm-4" onclick="addTab()">Guardar HTML</button>
-                <button  class="btn btn-outline-primary col-sm-4" onclick="addTab()">Guardar JSON</button>
-                <hr>
-
-                <ul class="nav nav-tabs nav-fill">
-                    <li class="nav-item">
-                        <a id="HTMLBtn" class="nav-link active" onclick="openTab(event,'txtHTML')">HTML</a>
-                    </li>
-                    <li class="nav-item">
-                        <a id="JSONBtn" class="nav-link " onclick="openTab(event,'txtJSON')">JSON</a>
-                    </li>
-                </ul>
-    
-                <div id="divTxtHTML" style="display: block;" >
-                    <textarea readonly id="txtJSON" class="col-sm-12 form-control" rows="15"></textarea>
-                </div>
-                <div id="divTxtJSON" style="display: none;" >
-                    <textarea readonly id="txtHTML" class="col-sm-12 form-control" rows="15"></textarea>
-                </div>
-
-            </div>
+        <!--Tabla de Variables-->   
+        <div>
+        <table class="table table-hover">
+            <thead class="thead-dark">
+              <tr>
+                <th scope="col">Identificador</th>
+                <th scope="col">Tipo</th>
+                <th scope="col">Linea</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <th scope="row">var1</th>
+                <td>int</td>
+                <td>85</td>
+              </tr>
+            </tbody>
+        </table>
         </div>
     </div>
+        <hr>
+    <div class="col-md-6 divcontent">
+        <!--Codigo Python-->
+        <div>
+            <h4>Codigo Python</h4>
+            <hr>
+            <button class="btn btn-outline-primary col-md-4" onclick="saveData('txtPython')">Guardar .py</button>
+            <hr><br><br>
+            <textarea readonly id="txtPython" class="col-md-12 form-control" rows="20"></textarea>
+        </div>
+        <hr>
+        <!--Codigo HTML & JSON-->
+        <div >
+            <h4>HTML y JSON</h4>
+            <hr>
+            <button  class="btn btn-outline-primary col-md-4" onclick="saveData('txtHTML')">Guardar HTML</button>
+            <button  class="btn btn-outline-primary col-md-4" onclick="saveData('txtJSON')">Guardar JSON</button>
+            <hr>
+
+            <ul class="nav nav-tabs nav-fill">
+                <li class="nav-item">
+                    <a id="HTMLBtn" class="nav-link active" onclick="openTab(event,'txtHTML')">HTML</a>
+                </li>
+                <li class="nav-item">
+                    <a id="JSONBtn" class="nav-link " onclick="openTab(event,'txtJSON')">JSON</a>
+                </li>
+            </ul>
+
+            <div id="divTxtHTML" style="display: block;" >
+                <textarea readonly id="txtJSON" class="col-md-12 form-control" rows="15"></textarea>
+            </div>
+            <div id="divTxtJSON" style="display: none;" >
+                <textarea readonly id="txtHTML" class="col-md-12 form-control" rows="15"></textarea>
+            </div>
+
+        </div>
+    </div>
+</div>
 </div>
 </body>
 </html>
