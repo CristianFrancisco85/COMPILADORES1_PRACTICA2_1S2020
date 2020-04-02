@@ -11,6 +11,8 @@ var PyhtonCode;     //CADENA DE CODIGO PYTHON
 var Identacion;     //LLEVA CONTEO DE LA IDENTACION
 var VariableArr;    //ARREGLO DE VARIABLES
 var HTMLCode;       //CADENA DE CODIGO HTML RECOPILADO
+var JSONCode;       //CADENA DE CODIGO JSON TRADUCIDO
+var IdentacionJSON; //LLEVA CONTEO DE LA IDENTACION EN JSON
 
 var FuncionBool;    //INDICA SI SE ESTA ADENTRO DE UNA FUNCION
 var MetodoBool;     //INDICA SI SE ESTA ADENTRO DE UN METODO
@@ -51,6 +53,7 @@ function beginAnalysis(){
     showVariables(VariableArr);
     document.getElementById("txtPython").innerHTML=PyhtonCode;
     document.getElementById("txtHTML").innerHTML=HTMLCode;
+    translateHTML();
 }
 
 //COMIENZA FUNCIONES DE SENTENCIAS Y BLOQUES
@@ -359,7 +362,7 @@ function sentenciaConsole(){
     if(matchToken("PUNTO",mainPointer)){
     }else{return false}
 
-    if(matchToken("RSV_WRITELINE",mainPointer)){
+    if(matchToken("RSV_WRITE",mainPointer)){
     }else{return false}
 
     if(matchToken("ABRE_PARENTESIS",mainPointer)){
@@ -376,10 +379,10 @@ function sentenciaConsole(){
         appendHTMLCode(getLexema(mainPointer-1));
     }
 
-    if(nextToken("SINGO_MAS",mainPointer)){
-        matchToken("SINGO_MAS",mainPointer);
+    if(nextToken("SIGNO_MAS",mainPointer)){
+        matchToken("SIGNO_MAS",mainPointer);
         if(matchToken("ID",mainPointer)){
-            appendPythonCode(",+"+getLexema(mainPointer-1));
+            appendPythonCode(","+getLexema(mainPointer-1));
         }else{return false}
     }
 
@@ -611,7 +614,13 @@ function sentenciaArgumentos(){
         if(matchRelacional()){                        
         }else{return false}
     
-        if(matchToken("ID",mainPointer)){
+        if(nextToken("ID",mainPointer)){
+            matchToken("ID",mainPointer);
+            appendPythonCode(getLexema(mainPointer-1));
+        }
+
+        else if(nextToken("NUMERO",mainPointer)){
+            matchToken("NUMERO",mainPointer);
             appendPythonCode(getLexema(mainPointer-1));
         }else{return false}
     
@@ -776,7 +785,6 @@ function matchLogicos(){
 }
 
 
-
 //TERMINAN FUNCIONES DE SENTENCIAS Y BLOQUES
 
 
@@ -874,7 +882,7 @@ function appendPythonCode(codeString){
 
 //CONCATENA INSTRUCCIONES EN HTML
 function appendHTMLCode(codeString){
-    HTMLCode=HTMLCode+codeString;
+    HTMLCode=HTMLCode+codeString.trim();
 }
 
 //AGREGA UNA VARIABLE AL ARREGLO
@@ -921,6 +929,7 @@ function catchError(tokenError,tokenEsperado){
     showErroresSintacticos(ErrorArr);
 }
 
+//MUESTRA TABLA DE ERRORES SINTACTICOS
 function showErroresSintacticos(Arreglo){
     var NewRow;
     var NewColumn;
@@ -949,6 +958,7 @@ function showErroresSintacticos(Arreglo){
     }
 }
 
+//MUESTRA TABLA DE VARIABLES
 function showVariables(Arreglo){
     var NewRow;
     var NewColumn;
@@ -971,4 +981,69 @@ function showVariables(Arreglo){
 
         document.getElementById("tableBodyVar").appendChild(NewRow);
     }
- }
+}
+
+//TRADUCE HTML A JSON
+function translateHTML(){
+    var ObjectHTML = document.createElement("div");
+    ObjectHTML.innerHTML=HTMLCode;
+    IdentacionJSON=0;
+    JSONCode="";
+    appendJSONCode("\"HTML\":{\n");
+    IdentacionJSON++;
+    for(var i=0;i<ObjectHTML.childNodes.length;i++){
+        writeChilds(ObjectHTML.childNodes[i]); 
+        appendJSONCode(tabulador(IdentacionJSON)+"}\n");
+    }
+    appendJSONCode("}\n");
+    document.getElementById("txtJSON").innerHTML=JSONCode;
+}
+
+function writeChilds(ObjectHTML){
+
+    if(ObjectHTML.tagName=="H1"||ObjectHTML.tagName=="H2"||ObjectHTML.tagName=="H3"||ObjectHTML.tagName=="H4"){
+        appendJSONCode(tabulador(IdentacionJSON)+"\""+ObjectHTML.tagName+"\":{\n");
+        appendJSONCode(tabulador(IdentacionJSON+1)+"\"TEXTO\":\""+ObjectHTML.innerHTML+"\"\n");
+    }
+    else if(ObjectHTML.tagName=="TITLE" || ObjectHTML.tagName=="P" || ObjectHTML.tagName=="BUTTON"||ObjectHTML.tagName=="LABEL"){
+        appendJSONCode(tabulador(IdentacionJSON)+"\""+ObjectHTML.tagName+"\":{\n");
+        appendJSONCode(tabulador(IdentacionJSON+1)+"\"TEXTO\":\""+ObjectHTML.innerHTML+"\"\n");
+    }
+
+    else{
+
+        var ArregloNodes = ObjectHTML.childNodes;
+
+        appendJSONCode(tabulador(IdentacionJSON)+"\""+ObjectHTML.tagName+"\":{\n");
+
+        if(ObjectHTML.tagName=="BODY" || ObjectHTML.tagName=="DIV"){
+            if(ArregloNodes.length==0){
+                appendJSONCode(tabulador(IdentacionJSON+1)+"\"STYLE\":\"background:"+ObjectHTML.style.background+"\"\n");
+            }
+            else{
+                appendJSONCode(tabulador(IdentacionJSON+1)+"\"STYLE\":\"background:"+ObjectHTML.style.background+"\",\n");
+            }
+        }
+
+        for(var i=0;i<ArregloNodes.length;i++){
+            IdentacionJSON++;
+            writeChilds(ArregloNodes[i]);
+            if((i+1)<ArregloNodes.length){
+                appendJSONCode(tabulador(IdentacionJSON)+"},\n");
+            }
+            else{
+                appendJSONCode(tabulador(IdentacionJSON)+"}\n");
+            }  
+            IdentacionJSON--;
+        }
+
+    }
+
+
+}
+
+//CONCATENA INSTRUCCIONES EN JSON
+function appendJSONCode(codeString){
+    JSONCode=JSONCode+codeString;
+}
+

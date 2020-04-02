@@ -9,7 +9,7 @@
 //ARREGLO DE PALABRAS RESERVADAS
 var RESERVADAS = [
     "int","double","float","char","bool","string","class","void","args","false","true",
-    "Console","WriteLine","switch","case","break","default","if",
+    "Console","Write","switch","case","break","default","if",
     "else","for","do","while","return","main","continue"
 ];
 
