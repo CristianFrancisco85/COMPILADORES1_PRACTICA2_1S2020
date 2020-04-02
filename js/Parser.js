@@ -10,6 +10,12 @@ var ErrorBool;      //INDICA SI HAY ERRORES SINTACTICOS
 var PyhtonCode;     //CADENA DE CODIGO PYTHON
 var Identacion;     //LLEVA CONTEO DE LA IDENTACION
 var VariableArr;    //ARREGLO DE VARIABLES
+var HTMLCode;       //CADENA DE CODIGO HTML RECOPILADO
+
+var FuncionBool;    //INDICA SI SE ESTA ADENTRO DE UNA FUNCION
+var MetodoBool;     //INDICA SI SE ESTA ADENTRO DE UN METODO
+var RepeticionBool; //INDICA SI SE ESTA ADENTRO DE UNA SENTENCIA DE REPETICION
+var SwitchBool;     //INDICA SI SE ESTA ADENTRO DE UN SWITCH
 
 function inicializarAnalizador(Arreglo){
     TokenArr= Arreglo;
@@ -17,25 +23,34 @@ function inicializarAnalizador(Arreglo){
     mainPointer=0;
     ErrorBool=false;
     PyhtonCode="";
+    HTMLCode="";
     Identacion=0;
     VariableArr=[];
     TokenFinal=new Object();
     TokenFinal.Tipo="FINAL";
     TokenArr.push(TokenFinal);
+    FuncionBool=false;
+    MetodoBool=false;
     beginAnalysis();
 }
 
 
 function beginAnalysis(){    
-    //SE VACIA TABLA DE ERRORES SINTACTICOS Y VARIBALES
+    //SE VACIA TABLA DE ERRORES SINTACTICOS,LEXICOS Y VARIBALES
+    document.getElementById("tableBodyLexicos").innerHTML="";
     document.getElementById("tableBodySintacticos").innerHTML="";
-    document.getElementById("tableBodyVar").innerHTML="";
-    //SE VACIA CODIGO DE PYTHON
+    document.getElementById("tableBodyVar").innerHTML=""
+    
+    //SE VACIA CODIGO DE PYTHON,HTML Y JSON
     document.getElementById("txtPython").innerHTML="";
+    document.getElementById("txtHTML").innerHTML="";
+    document.getElementById("txtJSON").innerHTML="";
 
     nextSentencia();
+
     showVariables(VariableArr);
     document.getElementById("txtPython").innerHTML=PyhtonCode;
+    document.getElementById("txtHTML").innerHTML=HTMLCode;
 }
 
 //COMIENZA FUNCIONES DE SENTENCIAS Y BLOQUES
@@ -61,13 +76,14 @@ function sentenciaDeclaracion(){
         //PARA DECLARACION INDIVIDUAL
         if(nextToken("PUNTO_COMA",mainPointer)){
             matchToken("PUNTO_COMA",mainPointer);
-            appendPythonCode(tabulador(Identacion)+"var "+getLexema(mainPointer-2)+"\n");
-            addVariable(TokenArr[mainPointer-2],getLexema(mainPointer-3));
+            //appendPythonCode(tabulador(Identacion)+"var "+getLexema(mainPointer-2)+"\n");
+            //addVariable(TokenArr[mainPointer-2],getLexema(mainPointer-3));
         }
         //PARA DECLARACION Y ASIGNACION INDIVIDUAL
         else if(nextToken("SIGNO_IGUAL",mainPointer)){
             matchToken("SIGNO_IGUAL",mainPointer);
-            appendPythonCode(tabulador(Identacion)+"var "+getLexema(mainPointer-2)+" = ");
+            //SE QUITO PALABRA VAR
+            appendPythonCode(tabulador(Identacion)+getLexema(mainPointer-2)+" = ");
             addVariable(TokenArr[mainPointer-2],getLexema(mainPointer-3));
             if(sentenciaExpresion()){
                 matchToken("PUNTO_COMA",mainPointer);
@@ -77,7 +93,8 @@ function sentenciaDeclaracion(){
         //PARA DECLARACION EN GRUPO
         else if(nextToken("COMA",mainPointer)){
             var tipoVar=getLexema(mainPointer-2);
-            appendPythonCode(tabulador(Identacion)+"var "+getLexema(mainPointer-1)+",");
+            //SE QUITO PALABRA VAR
+            appendPythonCode(tabulador(Identacion)+getLexema(mainPointer-1)+",");
             addVariable(TokenArr[mainPointer-1],tipoVar);
             matchToken("COMA",mainPointer);
             while(true){
@@ -108,8 +125,12 @@ function sentenciaDeclaracion(){
                 if(matchToken("ABRE_LLAVE",mainPointer)){
                     appendPythonCode(":\n");
                     Identacion++;
+                    FuncionBool=true;
                     nextSentencia();
-                    if(matchToken("CIERRA_LLAVE",mainPointer)){
+                    if(FuncionBool){
+                        matchToken("RSV_RETURN",mainPointer) 
+                    }
+                    else if(matchToken("CIERRA_LLAVE",mainPointer)){
                         Identacion--;
                     }
                 }
@@ -160,7 +181,9 @@ function sentenciaWhile(){
             if(matchToken("ABRE_LLAVE",mainPointer)){
                 appendPythonCode(":\n");
                 Identacion++;
+                RepeticionBool=true;
                 nextSentencia();
+                RepeticionBool=false;
                 if(matchToken("CIERRA_LLAVE",mainPointer)){
                     Identacion--;
                 }
@@ -211,38 +234,26 @@ function sentenciaElse(){
     nextSentencia();
 }
 
-function sentenciaParametros(){
-
-    if(nextToken("CIERRA_PARENTESIS",mainPointer)){
-        return true;
+function sentenciaReturn(){
+    if(MetodoBool){
+        if(matchToken("RSV_RETURN",mainPointer)){
+            appendPythonCode(tabulador(Identacion)+"return \n");
+            matchToken("PUNTO_COMA",mainPointer);
+            MetodoBool=false;
+            nextSentencia();
+        }
     }
-
-    while(true){
-
-        if(!matchTipoDato()){
-            return false;
-        }
-        if(!matchToken("ID",mainPointer)){
-            return false;
-        }
-        else{
-            appendPythonCode(getLexema(mainPointer-1));
-            if(nextToken("CIERRA_PARENTESIS",mainPointer)){
-                return true;
+    else if(FuncionBool){
+        if(matchToken("RSV_RETURN",mainPointer)){
+            appendPythonCode(tabulador(Identacion)+"return ");
+            if(sentenciaExpresion()){
+                matchToken("PUNTO_COMA",mainPointer);
+                appendPythonCode("\n");
+                FuncionBool=false;
+                nextSentencia();
             }
         }
-        if(nextToken("COMA",mainPointer)){
-            if(!nextToken("CIERRA_PARENTESIS",mainPointer+1)){
-                appendPythonCode(",");
-                matchToken("COMA",mainPointer);
-            }
-        }
-        else{
-            return matchToken("COMA",mainPointer);
-        }
-
     }
-
 }
 
 function sentenciaExpresion(){
@@ -292,7 +303,6 @@ function sentenciaDeclaracionMetodo(){
     mainPointer++;
     if(nextToken("ID",mainPointer)){
         matchToken("ID",mainPointer);
-        //PARA DECLARACION DE FUNCIONES
         if(nextToken("ABRE_PARENTESIS",mainPointer)){
             matchToken("ABRE_PARENTESIS",mainPointer);
             appendPythonCode(tabulador(Identacion)+"def "+getLexema(mainPointer-2)+"(");
@@ -302,19 +312,287 @@ function sentenciaDeclaracionMetodo(){
                 if(matchToken("ABRE_LLAVE",mainPointer)){
                     appendPythonCode(":\n");
                     Identacion++;
+                    MetodoBool=true;
                     nextSentencia();
-                    if(matchToken("CIERRA_LLAVE",mainPointer)){
+                    if(MetodoBool){
+                        matchToken("RSV_RETURN",mainPointer); 
+                    }
+                    else if(matchToken("CIERRA_LLAVE",mainPointer)){
                         Identacion--;
                     }
                 }
             }
         }
-        //FALTA DECLARACION DEL MAIN
+    }
+    else if(nextToken("RSV_MAIN",mainPointer)){
+        matchToken("RSV_MAIN",mainPointer);
+        if(nextToken("ABRE_PARENTESIS",mainPointer)){
+            matchToken("ABRE_PARENTESIS",mainPointer);
+            appendPythonCode(tabulador(Identacion)+"def "+getLexema(mainPointer-2)+"(");
+            if(matchToken("CIERRA_PARENTESIS",mainPointer)){
+                appendPythonCode(")");
+                if(matchToken("ABRE_LLAVE",mainPointer)){
+                    appendPythonCode(":\n");
+                    Identacion++;
+                    nextSentencia();
+                    if(matchToken("CIERRA_LLAVE",mainPointer)){
+                        Identacion--;
+                        appendPythonCode(tabulador(Identacion)+"if__name__=\"__main__\":\n");
+                        Identacion++;
+                        appendPythonCode(tabulador(Identacion)+"main()\n");
+                        Identacion--;
+                    }
+                    
+                }
+            }
+        }
     }
     else{
         matchToken("ID",mainPointer);
     }
     nextSentencia();
+}
+
+function sentenciaConsole(){
+    matchToken("RSV_CONSOLE",mainPointer);
+
+    if(matchToken("PUNTO",mainPointer)){
+    }else{return false}
+
+    if(matchToken("RSV_WRITELINE",mainPointer)){
+    }else{return false}
+
+    if(matchToken("ABRE_PARENTESIS",mainPointer)){
+        appendPythonCode(tabulador(Identacion)+"print(");
+    }else{return false}
+
+    if(nextToken("CADENA",mainPointer)){
+        matchToken("CADENA",mainPointer);
+        appendPythonCode("\""+getLexema(mainPointer-1)+"\"" );
+    }
+    else if(nextToken("CADENA_HTML",mainPointer)){
+        matchToken("CADENA_HTML",mainPointer);
+        appendPythonCode("\""+getLexema(mainPointer-1)+"\"" );
+        appendHTMLCode(getLexema(mainPointer-1));
+    }
+
+    if(nextToken("SINGO_MAS",mainPointer)){
+        matchToken("SINGO_MAS",mainPointer);
+        if(matchToken("ID",mainPointer)){
+            appendPythonCode(",+"+getLexema(mainPointer-1));
+        }else{return false}
+    }
+
+    if(matchToken("CIERRA_PARENTESIS",mainPointer)){
+        appendPythonCode(")\n");
+    }else{return false}
+
+    if(matchToken("PUNTO_COMA",mainPointer)){
+    }else{return false}
+
+    nextSentencia();
+}
+
+function sentenciaDoWhile(){
+    mainPointer++;
+    if(matchToken("ABRE_LLAVE",mainPointer)){
+        appendPythonCode(tabulador(Identacion)+"while TRUE:\n");
+        Identacion++;
+        RepeticionBool=true;
+        nextSentencia();
+        RepeticionBool=false;
+        if(matchToken("CIERRA_LLAVE",mainPointer)){
+            if(matchToken("RSV_WHILE",mainPointer)){
+                if(matchToken("ABRE_PARENTESIS",mainPointer)){
+                    appendPythonCode(tabulador(Identacion)+"if(");
+                    if(sentenciaArgumentos()){
+                        appendPythonCode("):\n");
+                        appendPythonCode(tabulador(Identacion+1)+"break\n");
+                        Identacion--;
+                    }
+                }
+            }
+        }
+    }
+    nextSentencia();
+}
+
+function sentenciaFor(){
+    mainPointer++;
+    appendPythonCode(tabulador(Identacion)+"for ");
+    if(matchToken("ABRE_PARENTESIS",mainPointer)){
+        if(sentenciaArgumentosFor()){
+            if(matchToken("ABRE_LLAVE",mainPointer)){
+                appendPythonCode(":\n");
+                Identacion++;
+                RepeticionBool=true;
+                nextSentencia();
+                RepeticionBool=false;
+                if(matchToken("CIERRA_LLAVE",mainPointer)){
+                    Identacion--;
+                }
+            } 
+        }
+    }
+    nextSentencia();
+}
+
+function sentenciaSwitch(){
+    mainPointer++;
+    if(matchToken("ABRE_PARENTESIS",mainPointer)){
+        if(argumentosSwitch()){
+            if(matchToken("CIERRA_LLAVE",mainPointer)){
+                Identacion--;
+            }
+        }
+    }
+    else{
+        matchToken("ABRE_PARENTESIS",mainPointer);
+    }
+    nextSentencia();
+}
+
+function argumentosSwitch(){
+    if(matchToken("ID",mainPointer)){
+        appendPythonCode(tabulador(Identacion)+"def switch("+getLexema(mainPointer-1)+"):\n");
+        Identacion++;
+    }else{return false}
+
+    if(matchToken("CIERRA_PARENTESIS",mainPointer)){
+    }else{return false}
+
+    if(matchToken("ABRE_LLAVE",mainPointer)){
+        appendPythonCode(tabulador(Identacion)+"switcher={\n");
+        Identacion++;
+    }else{return false}
+
+    while(true){
+
+        if(matchToken("RSV_CASE",mainPointer)){
+        }else{return false}
+
+        if(matchToken("NUMERO",mainPointer)){
+            appendPythonCode(tabulador(Identacion)+getLexema(mainPointer-1)+":");
+        }else{return false}
+
+        if(matchToken("DOS_PUNTOS",mainPointer)){
+        }else{return false}
+
+        if(matchToken("ID",mainPointer)){
+            appendPythonCode(getLexema(mainPointer-1));
+        }else{return false}
+
+        if(matchToken("SIGNO_IGUAL",mainPointer)){
+            appendPythonCode("=");
+        }else{return false}
+
+        if(matchToken("NUMERO",mainPointer)){
+            appendPythonCode(getLexema(mainPointer-1)+",\n");
+        }else{return false}
+
+        if(matchToken("PUNTO_COMA",mainPointer)){
+        }else{return false}
+
+        if(nextToken("RSV_BREAK",mainPointer)){
+            matchToken("RSV_BREAK",mainPointer);
+            if(matchToken("PUNTO_COMA",mainPointer)){
+            }else{return false}
+        }
+
+        if(nextToken("RSV_DEFAULT",mainPointer)){
+            Identacion--;
+            matchToken("RSV_DEFAULT",mainPointer);
+            if(matchToken("DOS_PUNTOS",mainPointer)){
+            }else{return false}
+            appendPythonCode(tabulador(Identacion)+"}\n");
+            nextSentencia();
+            return true;
+        }
+
+        if(nextToken("CIERRA_LLAVE",mainPointer)){
+            Identacion--;
+            appendPythonCode(tabulador(Identacion)+"}\n");
+            return true;
+        }
+    }
+}
+
+function sentenciaArgumentosFor(){
+
+    if(matchTipoDato()){
+    }else{return false}
+
+    if(matchToken("ID",mainPointer)){
+        appendPythonCode(getLexema(mainPointer-1)+" ");
+    }else{return false}
+
+    if(matchToken("SIGNO_IGUAL",mainPointer)){
+        appendPythonCode("in ");
+    }else{return false}
+
+    if(matchToken("NUMERO",mainPointer)){
+        appendPythonCode("range ("+getLexema(mainPointer-1));
+    }else{return false}
+
+    if(matchToken("PUNTO_COMA",mainPointer)){
+    }else{return false}
+
+    if(matchToken("ID",mainPointer)){
+    }else{return false}
+
+    if(matchRelacionalFor()){
+    }else{return false}
+
+    if(matchToken("PUNTO_COMA",mainPointer)){
+    }else{return false}
+
+    if(matchToken("ID",mainPointer)){
+    }else{return false}
+
+    if(matchToken("SIGNO_MAS",mainPointer)){
+    }else{return false}
+
+    if(matchToken("SIGNO_MAS",mainPointer)){
+    }else{return false}
+
+    if(matchToken("CIERRA_PARENTESIS",mainPointer)){
+    }else{return false}
+
+    return true;
+}
+
+function sentenciaParametros(){
+
+    if(nextToken("CIERRA_PARENTESIS",mainPointer)){
+        return true;
+    }
+
+    while(true){
+
+        if(!matchTipoDato()){
+            return false;
+        }
+        if(!matchToken("ID",mainPointer)){
+            return false;
+        }
+        else{
+            appendPythonCode(getLexema(mainPointer-1));
+            if(nextToken("CIERRA_PARENTESIS",mainPointer)){
+                return true;
+            }
+        }
+        if(nextToken("COMA",mainPointer)){
+            if(!nextToken("CIERRA_PARENTESIS",mainPointer+1)){
+                appendPythonCode(",");
+                matchToken("COMA",mainPointer);
+            }
+        }
+        else{
+            return matchToken("COMA",mainPointer);
+        }
+
+    }
+
 }
 
 function sentenciaArgumentos(){
@@ -449,6 +727,29 @@ function matchRelacional(){
     }
 }
 
+function matchRelacionalFor(){
+    if(nextToken("SIGNO_MENOR",mainPointer)){
+        matchToken("SIGNO_MENOR",mainPointer);
+        if(nextToken("SIGNO_IGUAL",mainPointer)){
+            matchToken("SIGNO_IGUAL",mainPointer);
+            if(matchToken("NUMERO",mainPointer)){
+                appendPythonCode(","+getLexema(mainPointer-1)+")");
+            }else{return false}
+            return true;
+        }
+        if(matchToken("NUMERO",mainPointer)){
+            var aux=parseInt(getLexema(mainPointer-1));
+            aux--;
+            appendPythonCode(","+aux+")");
+        }else{return false}
+        return true;    
+    }
+    else{
+        matchToken("OPERADOR RELACIONAL",mainPointer);
+        return false;
+    }
+}
+
 function matchLogicos(){
     if(nextToken("SIGNO_AMPERSAND",mainPointer)){
         matchToken("SIGNO_AMPERSAND",mainPointer);
@@ -501,6 +802,30 @@ function nextSentencia(){
     else if(nextToken("RSV_WHILE",mainPointer)){
         sentenciaWhile();
     }
+    else if(nextToken("RSV_DO",mainPointer)){
+        sentenciaDoWhile();
+    }
+    else if(nextToken("RSV_DO",mainPointer)){
+        sentenciaDoWhile();
+    }
+    else if(nextToken("RSV_FOR",mainPointer)){
+        sentenciaFor();
+    }
+    else if(nextToken("RSV_SWITCH",mainPointer)){
+        sentenciaSwitch();
+    }
+    else if(nextToken("RSV_BREAK",mainPointer)&&(SwitchBool||RepeticionBool)){
+        matchToken("RSV_BREAK",mainPointer);
+        appendPythonCode(tabulador(Identacion)+"break\n");
+    }
+    else if(nextToken("RSV_CONTINUE",mainPointer)&&RepeticionBool){
+        matchToken("RSV_CONTINUE",mainPointer);
+        appendPythonCode(tabulador(Identacion)+"continue\n");
+    }
+    else if(nextToken("RSV_CONSOLE",mainPointer)){
+        sentenciaConsole();
+    }
+
 }
 
 //COMPARA TOKEN CON EL SIGUIENTE TOKEN A LEER
@@ -542,9 +867,14 @@ function getLexema(Pointer){
     return tempToken.Lexema;
 }
 
-//CONCATENA LAS INSTRUCCIONES EN PYTHON
+//CONCATENA INSTRUCCIONES EN PYTHON
 function appendPythonCode(codeString){
     PyhtonCode=PyhtonCode+codeString;
+}
+
+//CONCATENA INSTRUCCIONES EN HTML
+function appendHTMLCode(codeString){
+    HTMLCode=HTMLCode+codeString;
 }
 
 //AGREGA UNA VARIABLE AL ARREGLO
