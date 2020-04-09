@@ -52,6 +52,7 @@ function ScanText(){
     var TokensArr = [];               //Arreglo de Tokens
     var ErroresArr = [];              //Arreglo de Errores Lexicos
     var Lineas=0;
+    var Columna=0;
 
     // INICIA ANALISIS LEXICO
     for (var i = 0; i < NCaracteres; i++)
@@ -104,8 +105,8 @@ function ScanText(){
         }
         //SI SE ESCANEO UN CARACTER OTROS
         if(!ControlScan){
-            Token.Fila = Math.ceil(i/62);
-            Token.Columna = i - (Token.Fila-1)*62;
+            Token.Fila =Lineas;
+            Token.Columna = Columna;
             Token.Lexema = String.fromCharCode(MyByte);
             TokensArr.push(Token);
         }
@@ -126,6 +127,7 @@ function ScanText(){
                         i = j - 1;
                         break;
                     }
+                    Columna++;
                 }
                 //SI ES UNA RESERVADA
                 if(RESERVADAS.includes(TempLexema)){
@@ -135,8 +137,8 @@ function ScanText(){
                 else{
                     Token.Tipo="ID"
                 }
-                Token.Fila = Lineas;
-                Token.Columna = i - (Token.Fila-1)*62;
+                Token.Fila =Lineas;
+                Token.Columna = Columna;
                 Token.Lexema=TempLexema;
                 TokensArr.push(Token);
             }
@@ -156,10 +158,11 @@ function ScanText(){
                         i = j - 1;
                         break;
                     }
+                    Columna++;
                 }
                 Token.Tipo="NUMERO";
                 Token.Fila = Lineas;
-                Token.Columna = i - (Token.Fila-1)*62;
+                Token.Columna = Columna;
                 Token.Lexema=TempLexema;
                 TokensArr.push(Token);
             }
@@ -177,7 +180,7 @@ function ScanText(){
                         Token.Tipo="CADENA";
                         Token.Lexema=TempLexema;
                         Token.Fila = Lineas;
-                        Token.Columna = i - (Token.Fila-1)*62;
+                        Token.Columna = Columna;
                         TokensArr.push(Token);
                         break;
                     }
@@ -185,6 +188,7 @@ function ScanText(){
                     {
                         TempLexema = TempLexema + String.fromCharCode(MyByte);
                     }
+                    Columna++;
                 }
             }
 
@@ -201,7 +205,7 @@ function ScanText(){
                         Token.Tipo="CADENA_HTML";
                         Token.Lexema=TempLexema;
                         Token.Fila = Lineas;
-                        Token.Columna = i - (Token.Fila-1)*62;
+                        Token.Columna = Columna;
                         TokensArr.push(Token);
                         break;
                     }
@@ -209,6 +213,7 @@ function ScanText(){
                     {
                         TempLexema = TempLexema + String.fromCharCode(MyByte);
                     }
+                    Columna++;
                 }
             }
 
@@ -222,8 +227,9 @@ function ScanText(){
                     Token.Tipo="SIGNO_DIVISION";
                     Token.Lexema=TempLexema;
                     Token.Fila = Lineas;
-                    Token.Columna = i - (Token.Fila-1)*62;
+                    Token.Columna = Columna;
                     TokensArr.push(Token);
+                    Columna++;
                     i--;
                 }
                 //Si no es un comentario
@@ -237,11 +243,12 @@ function ScanText(){
                             if (MyByte == 10)
                             {
                                 Lineas++;
+                                Columna=0;
                                 i = j;
                                 Token.Tipo="COMENTARIO";
                                 Token.Lexema=TempLexema;
                                 Token.Fila = Lineas;
-                                Token.Columna = i - (Token.Fila-1)*62;
+                                Token.Columna = Columna;
                                 TokensArr.push(Token);
                                 break;
                             }
@@ -249,6 +256,7 @@ function ScanText(){
                             {
                                 TempLexema = TempLexema + String.fromCharCode(MyByte);
                             }
+                            Columna++;
                         }
                     }
                     //Comentario Multilinea *
@@ -257,33 +265,34 @@ function ScanText(){
                         for (var j = i; j < NCaracteres; j++)
                         {
                             MyByte = Code.charCodeAt(j);
-                            if (MyByte == 47)
+                            if (MyByte == 42 && Code.charCodeAt(j+1)==47)
                             {
-                                i = j;
+                                i = j+1;
                                 Token.Tipo="COMENTARIO_MULTI";
                                 Token.Lexema=TempLexema;
                                 Token.Fila = Lineas;
-                                Token.Columna = i - (Token.Fila-1)*62;
+                                Token.Columna = Columna;
                                 TokensArr.push(Token);
                                 break;
                             }
                             else
-                            {
-                                if (MyByte != 42){
-                                    TempLexema = TempLexema + String.fromCharCode(MyByte);
-                                }
-                                else if(MyByte == 10){
+                            {                               
+                                TempLexema = TempLexema + String.fromCharCode(MyByte);                               
+                                if(MyByte == 10){
                                     Lineas++;
+                                    Columna=0;
                                 }
                             }
+                            Columna++;
                         }
                     }
                 }
             }
 
-            //PARA LINEAS
+            //PARA LINEAS Y COLUMNAS
             else if(MyByte == 10){
                 Lineas++;
+                Columna=0;
             }
             //PARA ERRORES LEXICOS
             else if(MyByte > 32){
@@ -294,6 +303,7 @@ function ScanText(){
                 ErroresBool=true;
             }
         }
+        Columna++;
     }
 
     //SI AL TERMINAR EL ANALISIS LEXICO HAY ERRORES SE GENERA REPORTE
