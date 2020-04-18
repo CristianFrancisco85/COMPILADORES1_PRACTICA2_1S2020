@@ -30,6 +30,7 @@
 }
 
 textarea {
+    white-space: pre;
     font-family: monospace;
-    font-size: 20pt;
+    font-size: 80pt;
 }
